@@ -133,7 +133,7 @@ def _summarize(queries, topics):
     # Initialize the client with the remote machine's IP
     # Default port is 11434
     client = Client(host=CFG["OLLAMA_HOST"])
-    response = client.chat(model='qwen3:8b', messages=[{'role': 'user','content': prompt,},])
+    response = client.chat(model='qwen3:8b', messages=[{'role': 'user','content': prompt}])
     return response['message']['content']
 
 
