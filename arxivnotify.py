@@ -101,26 +101,24 @@ def fetch_queries(queries, query_time):
 
     return fetched_data
 
+from ollama import Client
 
 def _summarize(queries, topics):
-    """Summarize the queries using anthropic"""
-    # Get the abstracts
+    """Summarize the queries using a remote Ollama instance"""
+    # Get the abstracts and titles
     abstracts = [q[2] for q in queries]
     titles = [q[0] for q in queries]
     abstracts_and_titles = "\n\n".join([f"{t}: {a}" for t, a in zip(titles, abstracts)])
 
-    prompt = f"""The following are the titles and abstracts of the papers that you have been reading in the last time period. Briefly summarize them (while retaining the necessary detail) as if you were giving a report on the following topics: {topics}.
-    {abstracts_and_titles}"""
+    prompt = f"""The following are the titles and abstracts of the papers that you have been reading in the last time period. 
+Briefly summarize them (while retaining the necessary detail) as if you were giving a report on the following topics: {topics}.
 
-    anthropic = Anthropic(api_key=CFG["CLAUDE_API_KEY"])
-    completion = anthropic.completions.create(
-        model="claude-2",
-        max_tokens_to_sample=512,
-        prompt=f"{HUMAN_PROMPT} {prompt} {AI_PROMPT}",
-    )
-
-    return completion.completion
-
+{abstracts_and_titles}"""
+    # Initialize the client with the remote machine's IP
+    # Default port is 11434
+    client = Client(host='http://192.168.1.XX:11434')
+    response = client.chat(model='qwen3:8b', messages=[{'role': 'user','content': prompt,},])
+    return response['message']['content']
 
 if __name__ == "__main__":
     ## 1. Parse the Config File
