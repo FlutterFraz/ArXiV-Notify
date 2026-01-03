@@ -10,33 +10,19 @@ We can clone the repository using: `git clone https://github.com/DavidMChan/ArXi
 
 ### 2. Install the dependencies
 
-This library depends on the `requests` library for API calls, and the `anthropic` library for summarization. Install the dependencies with:
+This library depends on the `requests` library for API calls, and the `ollama` library for summarization. Install the dependencies with:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Setup a mailgun account
+### 3. Setup Telegram bot
 
-This project uses Mailgun as the mail-sending application of choice. The following steps will walk you through getting started with a simple sandbox mail account. For more complicated messaging, you can set it up to use a custom domain.
-    
-You can create an account for free at [https://www.mailgun.com/](https://www.mailgun.com/). Once you create an account, follow the below steps to configure your account:
+Get the api key from botfather after creation, paste it in the .cfg, ask chatgpt how to get your msgid and voilà
 
-1. After your account is created a Sandbox Server will be created for you. Note the sandbox server url in the success message you receive here. That will be relevant again in a minute.
+### 4. Setup Ollama
 
-![](http://wpninjas.com/wp-content/uploads/2015/10/Screen-Shot-2015-10-16-at-2.20.08-PM-800x202.png)
-
-2. You should have by now received an email from Mailgun regarding account activation. Go to your email Inbox now and activate your account.
-    
-3. Now head to the Mailgun control panel for your sandbox domain by starting at the dashboard, clicking on the 'domains' page, then clicking on your 'sandbox' domain in the lower panel. This will take you to a page where you will have a 'Domain Information' Section with the API key, and the API Base URL. Copy these down. You will need both of these in the next configuration step. 
-
-4. We're also going to set up our sandbox domain for sending email to your recipients. Until you link your own domain, you have to get confirmation from an email before sending to them. On the 'Domain Information' page, there is another box called 'Authorized Recipients'. Add your email by clicking on the 'Manage Authorized recipients' box, then by clicking 'Invite new recipient' on the next page. Type in your email (the one you're going to use to recieve the ArXiV bot emails', and hit 'Invite Recipient'. You're going to recieve a confirmation email at that address, go to that email Inbox now and click accept. Congrats! You've now set yourself up to recieve email.
-
-(This tutorial is adapted from http://webcraft.tools/sending-email-with-mailgun/, which you may want to reference for further information)
-
-### 4. Setup the Anthropic API
-
-For summarization, we use Claude: https://docs.anthropic.com/claude/docs. Follow the instructions at that link to get an API key for Claude.
+Use your local instance of ollama!
 
 ### 5. Setup the config file
 
