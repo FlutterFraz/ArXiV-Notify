@@ -306,7 +306,7 @@ if __name__ == "__main__":
                 # 4. Data (formattata meglio)
                 html_output += f'\t<span class="date">{date_obj.strftime("%Y-%m-%d")}</span>\n'
                 # Se vuoi riattivare l'abstract nel PDF, decommenta sotto:
-                # html_output += f"<p class='abstract'>{abstract}</p>\n"
+                html_output += f"<p class='abstract'>{abstract}</p>\n"
                 html_output += "</li><br>\n"
 
             html_output += "</ul>\n"
