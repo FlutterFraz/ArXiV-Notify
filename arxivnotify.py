@@ -110,8 +110,8 @@ def fetch_queries(queries, query_time):
             # If the published articles is too old - we're done looking.
             if datetime_obj < oldest_query_time:
                 do_continue = False
-                print('article too old')
-                fetched_data.append((title, link, abstract, datetime_obj, authors, tags_str))
+                #print('article too old')
+                #fetched_data.append((title, link, abstract, datetime_obj, authors, tags_str))
                 break
 
             # Otherwise add the article
