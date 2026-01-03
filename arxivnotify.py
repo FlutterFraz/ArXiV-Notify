@@ -34,9 +34,10 @@ import time
 # Import the config parser
 import configparse
 
-# Import anthropic for summarization
-from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
-
+from ollama import Client
+import requests
+from weasyprint import HTML
+import io
 
 ## Build an ArXiV API Query which will query for the key
 def build_query(queries, page, num_elements):
@@ -101,7 +102,6 @@ def fetch_queries(queries, query_time):
 
     return fetched_data
 
-from ollama import Client
 
 def _summarize(queries, topics):
     """Summarize the queries using a remote Ollama instance"""
@@ -119,6 +119,41 @@ Briefly summarize them (while retaining the necessary detail) as if you were giv
     client = Client(host='http://192.168.1.XX:11434')
     response = client.chat(model='qwen3:8b', messages=[{'role': 'user','content': prompt,},])
     return response['message']['content']
+
+
+def _send_telegram_pdf(mail_subject, html_output):
+    try:
+        # 1. Generate PDF in memory (no need to save a local file)
+        pdf_file = io.BytesIO()
+        HTML(string=html_output).write_pdf(pdf_file)
+        pdf_file.seek(0) # Reset pointer to the start of the file
+
+        # 2. Send to each recipient
+        for chat_id in CFG["TELEGRAM_CHAT_IDS"]:
+            url = f"https://api.telegram.org/bot{CFG['TELEGRAM_BOT_TOKEN']}/sendDocument"
+            
+            # Name the file based on the subject
+            filename = f"{mail_subject.replace(' ', '_')}.pdf"
+            
+            payload = {
+                "chat_id": chat_id,
+                "caption": mail_subject # The text shown with the file
+            }
+            files = {
+                "document": (filename, pdf_file, "application/pdf")
+            }
+            
+            res = requests.post(url, data=payload, files=files)
+            
+            # Reset pointer for the next person in the loop
+            pdf_file.seek(0)
+            
+            if res.status_code != 200:
+                raise RuntimeError(f"Telegram PDF Error: {res.text}")
+
+    except Exception as e:
+        raise RuntimeError(f"Failed to generate/send PDF: {str(e)}")
+
 
 if __name__ == "__main__":
     ## 1. Parse the Config File
@@ -195,26 +230,12 @@ if __name__ == "__main__":
 {html_output}
 """
 
-    ## 3. Send the Emails
-    RETURN_VAL = None
+    ## 3. Invio del PDF tramite Telegram
     try:
-        for email in CFG["MAILGUN_TO"]:
-            RETURN_VAL = requests.post(
-                CFG["MAILGUN_ROOT"] + "/messages",
-                auth=("api", CFG["MAILGUN_API_KEY"]),
-                data={
-                    "from": CFG["MAILGUN_FROM"],
-                    "to": email,
-                    "subject": mail_subject,
-                    # "text": html_output,
-                    "html": html_output,
-                },
-            )
-            if RETURN_VAL.status_code != 200:
-                raise RuntimeError("Mail Error: ", RETURN_VAL.text)
-    except:
+        print(f"Generazione PDF e invio a Telegram in corso...")
+        _send_telegram_pdf(mail_subject, html_output)
+        print("Invio completato con successo!")
+    except Exception as e:
         raise RuntimeError(
-            "Arxiv notifier bot wasn't able to send an email! Check your mailgun API key and Root. HTML ERROR: {} {}".format(
-                RETURN_VAL.status_code, RETURN_VAL.text
-            )
+            f"Arxiv notifier bot non è riuscito a inviare il PDF su Telegram! Errore: {e}"
         )
