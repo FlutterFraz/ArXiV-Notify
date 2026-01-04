@@ -68,6 +68,7 @@ def fetch_queries(queries, query_time):
         q_raw = build_query(queries, current_page * pager_interval, pager_interval)
         # 2. Encoding dell'URL (fondamentale per gli spazi nella keyword)
         q_clean = urllib.parse.quote(q_raw, safe=':/?&=+')
+        #print(q_clean)
         # 3. Richiesta con User-Agent per evitare blocchi
         req = urllib.request.Request(q_clean, headers={'User-Agent': 'Mozilla/5.0'})
         try:
