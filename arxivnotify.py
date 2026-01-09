@@ -103,6 +103,31 @@ def _send_telegram_pdf(mail_subject, html_output):
     except Exception as e:
         print(f"Failed to send PDF: {e}")
 
+def _summarize(queries, topics):
+    """ 
+    To enable, add the following in the header of the html before {html_sections} 
+    
+        #<h2> Your Research Summary </h2>
+    #{summary}
+    
+    and call this function the step before:
+    
+    summary = _summarize(all_results, CFG["KEYWORD"])
+    """
+    """Summarize the queries using a remote Ollama instance"""
+    # Get the abstracts and titles
+    abstracts = [q[2] for q in queries]
+    titles = [q[0] for q in queries]
+    abstracts_and_titles = "\n\n".join([f"{t}: {a}" for t, a in zip(titles, abstracts)])
+
+    prompt = f"""The following are the titles and abstracts of the papers that you have been reading in the last time period.
+    Briefly summarize them (while retaining the necessary detail) as if you were giving a report on the following topics: {topics}.{abstracts_and_titles}"""
+    # Initialize the client with the remote machine's IP
+    # Default port is 11434
+    client = Client(host=CFG["OLLAMA_HOST"])
+    response = client.chat(model='qwen3:8b', messages=[{'role': 'user','content': prompt}])
+    return response['message']['content']
+
 if __name__ == "__main__":
     CFG = configparse.parse("arxivnotify.cfg")
     for key in ["KEYWORD", "TAG", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_IDS", "OLLAMA_HOST", "OLLAMA_MODEL"]:
