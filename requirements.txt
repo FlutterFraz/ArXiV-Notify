@@ -1,3 +1,4 @@
 ollama
 requests
 weasyprint
+python-dateutil
