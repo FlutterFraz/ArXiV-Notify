@@ -51,6 +51,7 @@ def fetch_queries(queries, query_time):
             break
 
         update_text = page_root.findtext("{http://www.w3.org/2005/Atom}updated")
+        now = datetime.datetime.now(datetime.timezone.utc)
         oldest_query_time = dateutil.parser.parse(update_text) - datetime.timedelta(days=int(query_time))
 
         time.sleep(3)
@@ -66,6 +67,9 @@ def fetch_queries(queries, query_time):
             categories = article.findall("{http://www.w3.org/2005/Atom}category")
             tags_list = [cat.get("term") for cat in categories]
 
+            if datetime_obj.tzinfo is None:
+                datetime_obj = datetime_obj.replace(tzinfo=datetime.timezone.utc)
+                
             if datetime_obj < oldest_query_time:
                 do_continue = False
                 break
