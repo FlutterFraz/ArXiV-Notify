@@ -13,6 +13,7 @@ import configparse
 from ollama import Client
 from weasyprint import HTML, CSS
 import io
+import html
 
 def build_query(queries, page, num_elements):
     query = "http://export.arxiv.org/api/query?search_query="
@@ -105,7 +106,9 @@ def _send_telegram_pdf(mail_subject, html_output):
             requests.post(url, data={"chat_id": chat_id, "caption": mail_subject}, files=files)
             pdf_file.seek(0)
     except Exception as e:
-        print(f"Failed to send PDF: {e}")
+        import traceback
+        print(f"Failed to send PDF:")
+        traceback.print_exc()
 
 def _summarize(queries, topics):
     """ 
@@ -169,13 +172,15 @@ if __name__ == "__main__":
             p = entry["data"]
             kws = entry["matched_keywords"]
             title, link, abstract, date_obj, authors, tags = p
+            clean_abstract = html.escape(abstract)
+            html_sections += f'<p class="abstract">{clean_abstract}</p>'
             html_sections += "<li>"
             if link not in fully_displayed_links:
                 total_articles += 1
                 html_sections += f'<b><a href="{link}">{title}</a></b><br>'
                 html_sections += '<div class="tag-container">' + "".join([f'<span class="tag">{t}</span>' for t in tags]) + '</div>'
                 html_sections += f'<i class="authors">{authors}</i><br><span class="date">{date_obj.strftime("%Y-%m-%d")}</span>'
-                html_sections += f'<p class="abstract">{abstract}</p>'
+                html_sections += f'<p class="abstract">{clean_abstract}</p>'
                 html_sections += f'<div class="kw-container"><span class="kw-label">Matched Keywords:</span> {", ".join(kws)}</div>'
                 fully_displayed_links.add(link)
             else:
@@ -189,6 +194,14 @@ if __name__ == "__main__":
 
     {html_sections}
     """
-        _send_telegram_pdf(mail_subject, f"<html><body>{html_sections}</body></html>")
+        # Adding the xmlns (XML Namespace) helps the parser avoid the AssertionError
+        full_html = (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<html xmlns="http://www.w3.org/1999/xhtml">'
+            '<body>'
+            f'{html_sections}'
+            '</body></html>'
+        )
+        _send_telegram_pdf(mail_subject, full_html)
     else:
         print("Nessun articolo trovato.")
