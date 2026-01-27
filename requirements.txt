@@ -2,3 +2,5 @@ ollama
 requests
 weasyprint
 python-dateutil
+cssselect2 
+html5lib
