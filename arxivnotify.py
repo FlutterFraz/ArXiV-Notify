@@ -173,7 +173,6 @@ if __name__ == "__main__":
             kws = entry["matched_keywords"]
             title, link, abstract, date_obj, authors, tags = p
             clean_abstract = html.escape(abstract)
-            html_sections += f'<p class="abstract">{clean_abstract}</p>'
             html_sections += "<li>"
             if link not in fully_displayed_links:
                 total_articles += 1
